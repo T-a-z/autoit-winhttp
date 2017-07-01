@@ -2099,11 +2099,11 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 	; "name:whatever", "Xcoord,Ycoord"
 	; "id:whatever", "Xcoord,Ycoord"
 	; "whatever", "Xcoord,Ycoord"     ;<- same as "id:whatever"
-	Local $aSpl, $iSubmitHTML5 = 0, $iInpSubm, $sImgAppx = "."
+	Local $aSpl, $iSubmitHTML5 = 0, $iInpSubm, $sImgAppx = ".", $sInpNme, $sType, $iX = 0, $iY = 0, $aStrSplit
 	For $k = 1 To $iNumParams
 		$aSpl = StringSplit($aFlds[$k], ":", 2)
 		If $aSpl[0] = "type" And ($aSpl[1] = "submit" Or $aSpl[1] = "image") Then
-			Local $iSubmIndex = $aDtas[$k], $iSubmCur = 0, $iImgCur = 0, $sType, $sInpNme
+			Local $iSubmIndex = $aDtas[$k], $iSubmCur = 0, $iImgCur = 0
 			If $aSpl[1] = "image" Then
 				$iSubmIndex = Int($aDtas[$k])
 			EndIf
@@ -2123,7 +2123,7 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 							$sInpNme = __WinHttpAttribVal($aInput[$iInpSubm], "name")
 							If $sInpNme Then $sInpNme &= $sImgAppx
 							$aInput[$iInpSubm] = 'type="image" formaction="' & __WinHttpAttribVal($aInput[$iInpSubm], "formaction") & '" formenctype="' & __WinHttpAttribVal($aInput[$iInpSubm], "formenctype") & '" formmethod="' & __WinHttpAttribVal($aInput[$iInpSubm], "formmethod") & '"'
-							Local $iX = 0, $iY = 0
+
 							$iX = Int(StringRegExpReplace($aDtas[$k], "(\d+)\h*(\d+),(\d+)", "$2", 1))
 							$iY = Int(StringRegExpReplace($aDtas[$k], "(\d+)\h*(\d+),(\d+)", "$3", 1))
 							ReDim $aInput[UBound($aInput) + 2]
@@ -2135,7 +2135,8 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 				EndSwitch
 			Next
 			ElseIf $aSpl[0] = "name" Then
-			Local $sInpNme = $aSpl[1], $sType
+
+			$sInpNme = $aSpl[1]
 			For $i = 0 To UBound($aInput) - 1 ; for all input elements
 				$sType = __WinHttpAttribVal($aInput[$i], "type")
 				If $sType = "submit" Then
@@ -2148,7 +2149,7 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 					If __WinHttpAttribVal($aInput[$i], "name") = $sInpNme And $aDtas[$k] Then
 						$iSubmitHTML5 = 1
 						$iInpSubm = $i
-						Local $aStrSplit = StringSplit($aDtas[$k], ",", 3), $iX = 0, $iY = 0
+						$aStrSplit = StringSplit($aDtas[$k], ",", 3)
 						If Not @error Then
 							$iX = Int($aStrSplit[0])
 							$iY = Int($aStrSplit[1])
@@ -2163,7 +2164,7 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 				EndIf
 			Next
 		Else ; id
-			Local $sInpId, $sType
+			Local $sInpId
 			If @error Then
 				$sInpId = $aSpl[0]
 			ElseIf $aSpl[0] = "id" Then
@@ -2181,9 +2182,9 @@ Func __WinHttpHTML5FormAttribs(ByRef $aDtas, ByRef $aFlds, ByRef $iNumParams, By
 					If __WinHttpAttribVal($aInput[$i], "id") = $sInpId And $aDtas[$k] Then
 						$iSubmitHTML5 = 1
 						$iInpSubm = $i
-						Local $sInpNme = __WinHttpAttribVal($aInput[$iInpSubm], "name")
+						$sInpNme = __WinHttpAttribVal($aInput[$iInpSubm], "name")
 						If $sInpNme Then $sInpNme &= $sImgAppx
-						Local $aStrSplit = StringSplit($aDtas[$k], ",", 3), $iX = 0, $iY = 0
+						$aStrSplit = StringSplit($aDtas[$k], ",", 3)
 						If Not @error Then
 							$iX = Int($aStrSplit[0])
 							$iY = Int($aStrSplit[1])
@@ -2355,6 +2356,8 @@ Func __WinHttpSetCredentials($hRequest, $sHeaders = "", $sOptional = "", $sCredN
 EndFunc
 
 Func __WinHttpFormUpload($hRequest, $sHeaders, $sData)
+	#forceref $sHeaders
+
 	Local $aClbk = _WinHttpSimpleFormFill_SetUploadCallback()
 	If $aClbk[0] <> Default Then
 		Local $iSize = StringLen($sData), $iChunk = Floor($iSize / $aClbk[1]), $iRest = $iSize - ($aClbk[1] - 1) * $iChunk, $iCurCh = $iChunk
